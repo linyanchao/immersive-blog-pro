@@ -18,7 +18,7 @@
     nav: document.getElementById("mainNav"),
     pageView: document.getElementById("pageView"),
     progress: document.getElementById("progress"),
-    backTop: document.getElementById("backTop")
+    backTop: document.getElementById("backTop"),
   };
 
   const state = {
@@ -35,14 +35,30 @@
     audioCtx: null,
     beat: 0,
     throttleTarget: 0,
-    velocity: 4.2 // m/s 近似
+    velocity: 4.2, // m/s 近似
   };
 
   const LANDING_STAGES = [
-    { eyebrow: "ELECTRIC · PERFORMANCE · FUTURE", title: "01 电子脉冲点火", sub: "滚轮推进镜头，点击触发能量脉冲，音乐与动画实时联动。" },
-    { eyebrow: "AERODYNAMIC · MOTION · POWER", title: "02 高速流线推进", sub: "滚轮切换分镜段落，镜头推拉配合速度感构建。" },
-    { eyebrow: "LIGHT · SPACE · CONTROL", title: "03 光场与姿态控制", sub: "鼠标移动改变观察角度，感受三维空间深度。" },
-    { eyebrow: "READY · ENTER · EXPERIENCE", title: "04 进入沉浸博客", sub: "点击进入，查看完整首页、归档、分类、标签、关于与搜索。" }
+    {
+      eyebrow: "ELECTRIC · PERFORMANCE · FUTURE",
+      title: "01 电子脉冲点火",
+      sub: "滚轮推进镜头，点击触发能量脉冲，音乐与动画实时联动。",
+    },
+    {
+      eyebrow: "AERODYNAMIC · MOTION · POWER",
+      title: "02 高速流线推进",
+      sub: "滚轮切换分镜段落，镜头推拉配合速度感构建。",
+    },
+    {
+      eyebrow: "LIGHT · SPACE · CONTROL",
+      title: "03 光场与姿态控制",
+      sub: "鼠标移动改变观察角度，感受三维空间深度。",
+    },
+    {
+      eyebrow: "READY · ENTER · EXPERIENCE",
+      title: "04 进入沉浸博客",
+      sub: "点击进入，查看完整首页、归档、分类、标签、关于与搜索。",
+    },
   ];
 
   const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
@@ -89,7 +105,9 @@
     if (!state.audioCtx) initAudioAnalyser();
 
     if (state.audioCtx && state.audioCtx.state === "suspended") {
-      try { await state.audioCtx.resume(); } catch {}
+      try {
+        await state.audioCtx.resume();
+      } catch {}
     }
 
     dom.bgm.volume = 0.45;
@@ -130,15 +148,15 @@
     let sum = 0;
     const bins = 24;
     for (let i = 0; i < bins; i++) sum += state.freqData[i];
-    return (sum / bins) / 255;
+    return sum / bins / 255;
   }
 
   /* ================= Stage UI ================= */
   function renderStageDots() {
     if (!dom.stageDots) return;
-    dom.stageDots.innerHTML = LANDING_STAGES
-      .map((_, i) => `<span class="stage-dot ${i === 0 ? "active" : ""}"></span>`)
-      .join("");
+    dom.stageDots.innerHTML = LANDING_STAGES.map(
+      (_, i) => `<span class="stage-dot ${i === 0 ? "active" : ""}"></span>`,
+    ).join("");
   }
 
   function setStage(index) {
@@ -149,10 +167,13 @@
     if (dom.stageEyebrow) dom.stageEyebrow.textContent = s.eyebrow;
     if (dom.stageTitle) dom.stageTitle.textContent = s.title;
     if (dom.stageSub) dom.stageSub.textContent = s.sub;
-    if (dom.landing) dom.landing.setAttribute("data-stage", String(state.stageIndex));
+    if (dom.landing)
+      dom.landing.setAttribute("data-stage", String(state.stageIndex));
 
     if (dom.stageDots) {
-      [...dom.stageDots.children].forEach((el, i) => el.classList.toggle("active", i === state.stageIndex));
+      [...dom.stageDots.children].forEach((el, i) =>
+        el.classList.toggle("active", i === state.stageIndex),
+      );
     }
 
     state.lastStageSwitch = performance.now();
@@ -176,7 +197,9 @@
 
   function setActiveNav(path) {
     if (!dom.nav) return;
-    [...dom.nav.querySelectorAll("a")].forEach(a => a.classList.remove("active"));
+    [...dom.nav.querySelectorAll("a")].forEach((a) =>
+      a.classList.remove("active"),
+    );
     const routeForNav = path === "post" ? "home" : path;
     const active = dom.nav.querySelector(`[data-route="${routeForNav}"]`);
     if (active) active.classList.add("active");
@@ -200,7 +223,7 @@
   }
 
   function renderHome() {
-    const tags = unique(posts.flatMap(p => p.tags));
+    const tags = unique(posts.flatMap((p) => p.tags));
     dom.pageView.innerHTML = `
       <section class="page-hero">
         <h1>沉浸式内容体验博客</h1>
@@ -209,7 +232,7 @@
 
       <section class="kpi-grid">
         <article class="kpi"><b>${posts.length}</b><span>文章总数</span></article>
-        <article class="kpi"><b>${unique(posts.map(p => p.category)).length}</b><span>分类数量</span></article>
+        <article class="kpi"><b>${unique(posts.map((p) => p.category)).length}</b><span>分类数量</span></article>
         <article class="kpi"><b>${tags.length}</b><span>标签数量</span></article>
         <article class="kpi"><b>Three.js</b><span>视觉引擎</span></article>
       </section>
@@ -237,11 +260,15 @@
     dom.pageView.innerHTML = `
       <section class="page-hero"><h1>归档</h1><p>按年份查看全部内容。</p></section>
       <div style="margin-top:16px;">
-        ${years.map(y => `
+        ${years
+          .map(
+            (y) => `
           <section class="timeline-year">
             <h3>${y}</h3>
             <div class="archive-list">
-              ${grouped[y].map(p => `
+              ${grouped[y]
+                .map(
+                  (p) => `
                 <article class="archive-item" data-open-post="${p.id}">
                   <div class="left">
                     <b>${p.title}</b>
@@ -249,10 +276,14 @@
                   </div>
                   <span class="pill">${p.readTime}</span>
                 </article>
-              `).join("")}
+              `,
+                )
+                .join("")}
             </div>
           </section>
-        `).join("")}
+        `,
+          )
+          .join("")}
       </div>
     `;
   }
@@ -268,21 +299,28 @@
     dom.pageView.innerHTML = `
       <section class="page-hero"><h1>分类</h1><p>按主题维度聚合内容。</p></section>
       <section class="simple-grid" style="margin-top:16px;">
-        ${list.map(([name, items]) => `
+        ${list
+          .map(
+            ([name, items]) => `
           <article class="item-card">
             <h4>${name}</h4>
             <p class="muted">共 ${items.length} 篇文章</p>
-            <ul class="list">${items.slice(0, 3).map(i => `<li>${i.title}</li>`).join("")}</ul>
+            <ul class="list">${items
+              .slice(0, 3)
+              .map((i) => `<li>${i.title}</li>`)
+              .join("")}</ul>
             <button class="btn" data-go-category="${name}">在搜索页查看</button>
           </article>
-        `).join("")}
+        `,
+          )
+          .join("")}
       </section>
     `;
   }
 
   function renderTags() {
     const map = {};
-    posts.forEach(p => p.tags.forEach(t => map[t] = (map[t] || 0) + 1));
+    posts.forEach((p) => p.tags.forEach((t) => (map[t] = (map[t] || 0) + 1)));
     const list = Object.entries(map).sort((a, b) => b[1] - a[1]);
 
     dom.pageView.innerHTML = `
@@ -322,8 +360,8 @@
   }
 
   function renderSearch(params) {
-    const categories = unique(posts.map(p => p.category));
-    const tags = unique(posts.flatMap(p => p.tags));
+    const categories = unique(posts.map((p) => p.category));
+    const tags = unique(posts.flatMap((p) => p.tags));
 
     const q0 = params.get("q") || "";
     const c0 = params.get("category") || "";
@@ -336,11 +374,11 @@
           <input id="searchInput" class="input" placeholder="输入标题 / 摘要 / 标签..." value="${q0}" />
           <select id="categorySelect" class="select">
             <option value="">全部分类</option>
-            ${categories.map(c => `<option value="${c}" ${c === c0 ? "selected" : ""}>${c}</option>`).join("")}
+            ${categories.map((c) => `<option value="${c}" ${c === c0 ? "selected" : ""}>${c}</option>`).join("")}
           </select>
           <select id="tagSelect" class="select">
             <option value="">全部标签</option>
-            ${tags.map(t => `<option value="${t}" ${t === t0 ? "selected" : ""}>${t}</option>`).join("")}
+            ${tags.map((t) => `<option value="${t}" ${t === t0 ? "selected" : ""}>${t}</option>`).join("")}
           </select>
           <button id="clearSearch" class="btn">清空</button>
         </div>
@@ -360,9 +398,14 @@
       const q = input.value.trim().toLowerCase();
       const c = categorySelect.value;
       const t = tagSelect.value;
-      const list = posts.filter(p => {
-        const text = `${p.title} ${p.excerpt} ${p.category} ${p.tags.join(" ")}`.toLowerCase();
-        return (!q || text.includes(q)) && (!c || p.category === c) && (!t || p.tags.includes(t));
+      const list = posts.filter((p) => {
+        const text =
+          `${p.title} ${p.excerpt} ${p.category} ${p.tags.join(" ")}`.toLowerCase();
+        return (
+          (!q || text.includes(q)) &&
+          (!c || p.category === c) &&
+          (!t || p.tags.includes(t))
+        );
       });
       searchCount.textContent = `共找到 ${list.length} 条结果`;
       searchResults.innerHTML = list.length
@@ -409,8 +452,8 @@ location.hash = route;</code></pre>
 
   function renderPost(params) {
     const id = params.get("id");
-    const post = posts.find(p => p.id === id) || posts[0];
-    const idx = posts.findIndex(p => p.id === post.id);
+    const post = posts.find((p) => p.id === id) || posts[0];
+    const idx = posts.findIndex((p) => p.id === post.id);
     const prev = idx > 0 ? posts[idx - 1] : null;
     const next = idx < posts.length - 1 ? posts[idx + 1] : null;
 
@@ -449,20 +492,28 @@ location.hash = route;</code></pre>
   function initTOC() {
     const toc = document.getElementById("tocList");
     if (!toc) return;
-    state.tocHeadings = [...dom.pageView.querySelectorAll(".article-body h2, .article-body h3")];
+    state.tocHeadings = [
+      ...dom.pageView.querySelectorAll(".article-body h2, .article-body h3"),
+    ];
     state.tocHeadings.forEach((h, i) => (h.id = `sec-${i + 1}`));
 
-    toc.innerHTML = state.tocHeadings.map(h => `
+    toc.innerHTML = state.tocHeadings
+      .map(
+        (h) => `
       <li class="${h.tagName === "H3" ? "sub" : ""}">
         <a href="#${h.id}" data-toc-id="${h.id}">${h.textContent}</a>
       </li>
-    `).join("");
+    `,
+      )
+      .join("");
 
     state.tocLinks = [...toc.querySelectorAll("a")];
-    state.tocLinks.forEach(link => {
+    state.tocLinks.forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
-        document.getElementById(link.dataset.tocId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        document
+          .getElementById(link.dataset.tocId)
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
 
@@ -476,7 +527,9 @@ location.hash = route;</code></pre>
       if (h.getBoundingClientRect().top <= 130) current = h.id;
       else break;
     }
-    state.tocLinks.forEach(a => a.classList.toggle("active", a.dataset.tocId === current));
+    state.tocLinks.forEach((a) =>
+      a.classList.toggle("active", a.dataset.tocId === current),
+    );
   }
 
   function renderRoute() {
@@ -490,14 +543,29 @@ location.hash = route;</code></pre>
     }
 
     switch (path) {
-      case "home": renderHome(); break;
-      case "archive": renderArchive(); break;
-      case "categories": renderCategories(); break;
-      case "tags": renderTags(); break;
-      case "about": renderAbout(); break;
-      case "search": renderSearch(params); break;
-      case "post": renderPost(params); break;
-      default: renderHome();
+      case "home":
+        renderHome();
+        break;
+      case "archive":
+        renderArchive();
+        break;
+      case "categories":
+        renderCategories();
+        break;
+      case "tags":
+        renderTags();
+        break;
+      case "about":
+        renderAbout();
+        break;
+      case "search":
+        renderSearch(params);
+        break;
+      case "post":
+        renderPost(params);
+        break;
+      default:
+        renderHome();
     }
 
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -510,7 +578,8 @@ location.hash = route;</code></pre>
       if (openPost) return setHash("post", { id: openPost.dataset.openPost });
 
       const goCategory = e.target.closest("[data-go-category]");
-      if (goCategory) return setHash("search", { category: goCategory.dataset.goCategory });
+      if (goCategory)
+        return setHash("search", { category: goCategory.dataset.goCategory });
 
       const goTag = e.target.closest("[data-go-tag]");
       if (goTag) return setHash("search", { tag: goTag.dataset.goTag });
@@ -530,13 +599,17 @@ location.hash = route;</code></pre>
     }
     const doc = document.documentElement;
     const h = doc.scrollHeight - doc.clientHeight;
-    if (dom.progress) dom.progress.style.width = (h > 0 ? (doc.scrollTop / h) * 100 : 0) + "%";
+    if (dom.progress)
+      dom.progress.style.width = (h > 0 ? (doc.scrollTop / h) * 100 : 0) + "%";
     if (dom.backTop) dom.backTop.classList.toggle("show", doc.scrollTop > 420);
     syncTOCActive();
   }
 
   window.addEventListener("scroll", onScroll, { passive: true });
-  if (dom.backTop) dom.backTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  if (dom.backTop)
+    dom.backTop.addEventListener("click", () =>
+      window.scrollTo({ top: 0, behavior: "smooth" }),
+    );
 
   /* ================= Landing helpers ================= */
   function createRadialTexture() {
@@ -570,8 +643,8 @@ location.hash = route;</code></pre>
         transparent: true,
         opacity: 0.75,
         blending: THREE.AdditiveBlending,
-        depthWrite: false
-      })
+        depthWrite: false,
+      }),
     );
 
     const glow = new THREE.LineSegments(
@@ -581,51 +654,83 @@ location.hash = route;</code></pre>
         transparent: true,
         opacity: 0.2,
         blending: THREE.AdditiveBlending,
-        depthWrite: false
-      })
+        depthWrite: false,
+      }),
     );
     glow.scale.set(1, 1.035, 1);
 
     scene.add(glow);
     scene.add(core);
 
-    const lanes = [-1.75, -1.35, -1.0, -0.62, -0.25, 0.1, 0.45, 0.85, 1.3, 1.8, 2.25];
+    const lanes = [
+      -1.75, -1.35, -1.0, -0.62, -0.25, 0.1, 0.45, 0.85, 1.3, 1.8, 2.25,
+    ];
     const items = [];
 
     function reset(it, first = false) {
       it.side = Math.random() < 0.5 ? -1 : 1;
       it.lat = it.side * (2.9 + Math.random() * 10.5);
-      it.h = lanes[(Math.random() * lanes.length) | 0] + (Math.random() - 0.5) * 0.06;
-      it.along = first ? (-40 + Math.random() * 95) : (55 + Math.random() * 35);
+      it.h =
+        lanes[(Math.random() * lanes.length) | 0] +
+        (Math.random() - 0.5) * 0.06;
+      it.along = first ? -40 + Math.random() * 95 : 55 + Math.random() * 35;
       it.len = 1.2 + Math.random() * 5.2;
       it.layer = 0.55 + Math.random() * 1.95;
       it.seed = Math.random() * 100;
       it.rearLimit = 58 + Math.random() * 18;
 
-      const c = Math.random() < 0.9 ? new THREE.Color(0x8fe3ff) : new THREE.Color(0xff9dcd);
-      it.r = c.r; it.g = c.g; it.b = c.b;
+      const c =
+        Math.random() < 0.9
+          ? new THREE.Color(0x8fe3ff)
+          : new THREE.Color(0xff9dcd);
+      it.r = c.r;
+      it.g = c.g;
+      it.b = c.b;
       return it;
     }
 
     for (let i = 0; i < count; i++) items.push(reset({}, true));
 
     return {
-      update({ dt, t, speedNorm, boost, pointerX, pointerY, carPos, forward, side, up }) {
-        const fx = forward.x, fy = forward.y, fz = forward.z;
-        const sx = side.x, sy = side.y, sz = side.z;
-        const ux = up.x, uy = up.y, uz = up.z;
-        const bx = -fx, by = -fy, bz = -fz;
+      update({
+        dt,
+        t,
+        speedNorm,
+        boost,
+        pointerX,
+        pointerY,
+        carPos,
+        forward,
+        side,
+        up,
+      }) {
+        const fx = forward.x,
+          fy = forward.y,
+          fz = forward.z;
+        const sx = side.x,
+          sy = side.y,
+          sz = side.z;
+        const ux = up.x,
+          uy = up.y,
+          uz = up.z;
+        const bx = -fx,
+          by = -fy,
+          bz = -fz;
 
         const flowSpeed = 28 + speedNorm * 110 + boost * 42;
-        const px = carPos.x, py = carPos.y, pz = carPos.z;
+        const px = carPos.x,
+          py = carPos.y,
+          pz = carPos.z;
 
         for (let i = 0; i < count; i++) {
           const it = items[i];
           it.along -= flowSpeed * dt * it.layer;
           if (it.along < -it.rearLimit) reset(it, false);
 
-          const lat = it.lat + pointerX * (0.95 + it.layer * 0.16) * Math.sign(it.lat);
-          const h = it.h + pointerY * 0.22 + Math.sin(t * 0.85 + it.seed) * 0.015;
+          const lat =
+            it.lat + pointerX * (0.95 + it.layer * 0.16) * Math.sign(it.lat);
+          const h =
+            it.h + pointerY * 0.22 + Math.sin(t * 0.85 + it.seed) * 0.015;
           const along = it.along;
 
           const x = px + sx * lat + ux * h + fx * along;
@@ -634,7 +739,12 @@ location.hash = route;</code></pre>
 
           const seg = it.len * (1 + speedNorm * 2.35 + boost * 0.95);
 
-          const clearZone = Math.abs(lat) < 2.15 && h > -1.5 && h < 1.8 && along > -4 && along < 8;
+          const clearZone =
+            Math.abs(lat) < 2.15 &&
+            h > -1.5 &&
+            h < 1.8 &&
+            along > -4 &&
+            along < 8;
           const vis = clearZone ? 0.14 : 1.0;
 
           const bi = i * 6;
@@ -647,13 +757,17 @@ location.hash = route;</code></pre>
           pos[bi + 5] = z - bz * seg * 0.35;
 
           const g = (0.35 + speedNorm * 1.1 + boost * 0.75) * vis;
-          col[bi + 0] = it.r * g; col[bi + 1] = it.g * g; col[bi + 2] = it.b * g;
-          col[bi + 3] = it.r * g; col[bi + 4] = it.g * g; col[bi + 5] = it.b * g;
+          col[bi + 0] = it.r * g;
+          col[bi + 1] = it.g * g;
+          col[bi + 2] = it.b * g;
+          col[bi + 3] = it.r * g;
+          col[bi + 4] = it.g * g;
+          col[bi + 5] = it.b * g;
         }
 
         geo.attributes.position.needsUpdate = true;
         geo.attributes.color.needsUpdate = true;
-      }
+      },
     };
   }
 
@@ -668,10 +782,19 @@ location.hash = route;</code></pre>
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x050913, 0.05);
 
-    const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 260);
+    const camera = new THREE.PerspectiveCamera(
+      62,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      260,
+    );
     camera.position.set(2.2, 0.45, 10.5);
 
-    const renderer = new THREE.WebGLRenderer({ canvas: dom.canvas, antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({
+      canvas: dom.canvas,
+      antialias: true,
+      alpha: true,
+    });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -699,8 +822,8 @@ location.hash = route;</code></pre>
         roughness: 0.74,
         metalness: 0.22,
         transparent: true,
-        opacity: 0.72
-      })
+        opacity: 0.72,
+      }),
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = floorY;
@@ -724,8 +847,8 @@ location.hash = route;</code></pre>
         transparent: true,
         opacity: 0.42,
         blending: THREE.AdditiveBlending,
-        depthWrite: false
-      })
+        depthWrite: false,
+      }),
     );
     halo.scale.set(8.5, 4.4, 1);
     halo.position.set(0, 0.38, -0.9);
@@ -738,8 +861,8 @@ location.hash = route;</code></pre>
         transparent: true,
         opacity: 0.3,
         blending: THREE.AdditiveBlending,
-        depthWrite: false
-      })
+        depthWrite: false,
+      }),
     );
     underGlow.scale.set(6.2, 2.0, 1);
     underGlow.position.set(0, -0.4, 0.8);
@@ -764,7 +887,8 @@ location.hash = route;</code></pre>
     }
 
     function removeLegacyWingMeshes(root) {
-      const wingReg = /spoiler|rear[\s_-]?wing|tail[\s_-]?wing|尾翼|扰流|ducktail/i;
+      const wingReg =
+        /spoiler|rear[\s_-]?wing|tail[\s_-]?wing|尾翼|扰流|ducktail/i;
       const mirrorReg = /mirror|后视镜/i;
       root.traverse((n) => {
         if (!n.isMesh) return;
@@ -783,38 +907,56 @@ location.hash = route;</code></pre>
         clearcoat: 1,
         clearcoatRoughness: 0.08,
         emissive: 0x081946,
-        emissiveIntensity: 0.8
+        emissiveIntensity: 0.8,
       });
       const glassMat = new THREE.MeshPhysicalMaterial({
         color: 0x79d8ff,
         transparent: true,
         opacity: 0.76,
         transmission: 0.5,
-        roughness: 0.03
+        roughness: 0.03,
       });
 
-      const body = new THREE.Mesh(new THREE.CapsuleGeometry(2.2, 1.5, 10, 24), bodyMat);
+      const body = new THREE.Mesh(
+        new THREE.CapsuleGeometry(2.2, 1.5, 10, 24),
+        bodyMat,
+      );
       body.rotation.z = Math.PI / 2;
       body.scale.set(1, 0.42, 0.68);
 
-      const lower = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.62, 1.95), bodyMat);
+      const lower = new THREE.Mesh(
+        new THREE.BoxGeometry(4.8, 0.62, 1.95),
+        bodyMat,
+      );
       lower.position.set(0, -0.14, 0.12);
 
-      const cabin = new THREE.Mesh(new THREE.SphereGeometry(0.95, 24, 24), glassMat);
+      const cabin = new THREE.Mesh(
+        new THREE.SphereGeometry(0.95, 24, 24),
+        glassMat,
+      );
       cabin.scale.set(1.55, 0.62, 0.95);
       cabin.position.set(-0.28, 0.48, 0.12);
 
       g.add(body, lower, cabin);
 
-      const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0b0f16, roughness: 0.86, metalness: 0.2 });
+      const wheelMat = new THREE.MeshStandardMaterial({
+        color: 0x0b0f16,
+        roughness: 0.86,
+        metalness: 0.2,
+      });
       const wheelPos = [
-        [-1.55, -0.55, -1.35], [1.55, -0.55, -1.35],
-        [-1.55, -0.55, 1.35], [1.55, -0.55, 1.35]
+        [-1.55, -0.55, -1.35],
+        [1.55, -0.55, -1.35],
+        [-1.55, -0.55, 1.35],
+        [1.55, -0.55, 1.35],
       ];
 
       wheelInfos = [];
       wheelPos.forEach((p) => {
-        const w = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.34, 24), wheelMat);
+        const w = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.5, 0.5, 0.34, 24),
+          wheelMat,
+        );
         w.position.set(p[0], p[1], p[2]);
         w.rotation.z = Math.PI / 2;
         g.add(w);
@@ -866,7 +1008,8 @@ location.hash = route;</code></pre>
           if (m.isMeshStandardMaterial || m.isMeshPhysicalMaterial) {
             m.metalness = Math.max(0.45, m.metalness ?? 0.7);
             m.roughness = Math.min(0.34, m.roughness ?? 0.26);
-            if ("clearcoat" in m) m.clearcoat = Math.max(0.78, m.clearcoat ?? 0.9);
+            if ("clearcoat" in m)
+              m.clearcoat = Math.max(0.78, m.clearcoat ?? 0.9);
             m.envMapIntensity = 1.35;
             if (m.color) m.color.offsetHSL(0, 0, 0.06);
             if (m.emissive) {
@@ -884,11 +1027,19 @@ location.hash = route;</code></pre>
       bounds.getSize(size);
       bounds.getCenter(center);
 
+      const WHEEL_NAME = /wheel|tyre|tire|rim|轮毂|轮胎/i;
+      const EXCLUDE_NAME =
+        /door|门|hood|bonnet|trunk|tailgate|spoiler|wing|mirror|window|glass|seat|bumper|body|fender|handle/i;
+
       const cands = [];
       const wp = new THREE.Vector3();
 
       root.traverse((n) => {
         if (!n.isMesh || !n.geometry) return;
+
+        const nm = (n.name || "").toLowerCase();
+        if (EXCLUDE_NAME.test(nm)) return;
+
         n.geometry.computeBoundingBox();
         const bb = n.geometry.boundingBox;
         if (!bb) return;
@@ -896,27 +1047,53 @@ location.hash = route;</code></pre>
         const d = new THREE.Vector3().subVectors(bb.max, bb.min);
         const dims = [Math.abs(d.x), Math.abs(d.y), Math.abs(d.z)];
         const sorted = [...dims].sort((a, b) => b - a);
-        if (sorted[0] < 0.12) return;
 
-        const discLike = 1 - Math.abs(sorted[0] - sorted[1]) / (sorted[0] + 1e-6);
+        // 太小跳过
+        if (sorted[0] < 0.08) return;
+
+        // 轮胎应“近似圆盘”：两长边接近 + 一条明显短边
+        const discLike =
+          1 - Math.abs(sorted[0] - sorted[1]) / (sorted[0] + 1e-6);
         const thinRatio = sorted[2] / (sorted[0] + 1e-6);
-        if (discLike < 0.55 || thinRatio > 0.58) return;
+
+        if (discLike < 0.55 || thinRatio > 0.55) return;
 
         n.getWorldPosition(wp);
-        const ny = (wp.y - bounds.min.y) / (size.y + 1e-6);
-        if (ny > 0.62) return;
 
-        const lateral = Math.abs((wp.x - center.x) / (size.x + 1e-6));
-        const longitudinal = Math.abs((wp.z - center.z) / (size.z + 1e-6));
-        const score = discLike * 0.45 + (1 - thinRatio) * 0.35 + lateral * 0.12 + longitudinal * 0.08;
+        const ny = (wp.y - bounds.min.y) / (size.y + 1e-6);
+        const nx = Math.abs((wp.x - center.x) / (size.x + 1e-6));
+        const nz = Math.abs((wp.z - center.z) / (size.z + 1e-6));
+
+        // 轮胎应靠近地面 + 靠近左右两侧 + 不是车体中心
+        if (ny < -0.05 || ny > 0.38) return;
+        if (nx < 0.18) return;
+        if (nz < 0.1) return;
 
         const minIdx = dims.indexOf(Math.min(...dims));
-        const axisLocal = axisByIndex(minIdx);
-        cands.push({ mesh: n, axisLocal, score, wp: wp.clone() });
+        const axisLocal =
+          minIdx === 0
+            ? new THREE.Vector3(1, 0, 0)
+            : minIdx === 1
+              ? new THREE.Vector3(0, 1, 0)
+              : new THREE.Vector3(0, 0, 1);
+
+        let score =
+          discLike * 1.2 + (1 - thinRatio) * 1.2 + nx * 0.6 + nz * 0.4;
+
+        if (WHEEL_NAME.test(nm)) score += 2.0; // 名称命中大加分
+
+        cands.push({
+          mesh: n,
+          axisLocal: axisLocal.normalize(),
+          score,
+          wp: wp.clone(),
+          name: n.name || "(unnamed)",
+        });
       });
 
       if (!cands.length) return [];
 
+      // 分象限选 4 个（左前/右前/左后/右后）
       const q = { LF: null, RF: null, LB: null, RB: null };
       cands.forEach((c) => {
         const side = c.wp.x < center.x ? "L" : "R";
@@ -926,16 +1103,24 @@ location.hash = route;</code></pre>
       });
 
       let out = Object.values(q).filter(Boolean);
+
+      // 不足 4 个则按分数补齐
       if (out.length < 4) {
-        const used = new Set(out.map(i => i.mesh.uuid));
-        const rest = cands.filter(i => !used.has(i.mesh.uuid)).sort((a, b) => b.score - a.score);
+        const used = new Set(out.map((i) => i.mesh.uuid));
+        const rest = cands
+          .filter((i) => !used.has(i.mesh.uuid))
+          .sort((a, b) => b.score - a.score);
         while (out.length < 4 && rest.length) out.push(rest.shift());
       }
 
-      return out.slice(0, 4).map(w => ({
+      out = out.slice(0, 4).map((w) => ({
         mesh: w.mesh,
-        axisLocal: w.axisLocal.clone().normalize()
+        axisLocal: w.axisLocal,
+        name: w.name,
       }));
+
+      console.table(out.map((w, i) => ({ idx: i, name: w.name })));
+      return out;
     }
 
     function createSemanticFx(bounds) {
@@ -950,11 +1135,27 @@ location.hash = route;</code></pre>
       const yHead = bounds.min.y + size.y * 0.42;
       const halfW = size.x * 0.33;
 
-      const frontMatL = new THREE.MeshBasicMaterial({ color: 0x8fe8ff, transparent: true, opacity: 0.86, depthWrite: false });
-      const frontMatR = new THREE.MeshBasicMaterial({ color: 0x8fe8ff, transparent: true, opacity: 0.86, depthWrite: false });
+      const frontMatL = new THREE.MeshBasicMaterial({
+        color: 0x8fe8ff,
+        transparent: true,
+        opacity: 0.86,
+        depthWrite: false,
+      });
+      const frontMatR = new THREE.MeshBasicMaterial({
+        color: 0x8fe8ff,
+        transparent: true,
+        opacity: 0.86,
+        depthWrite: false,
+      });
 
-      const frontL = new THREE.Mesh(new THREE.BoxGeometry(size.x * 0.19, 0.024, 0.02), frontMatL);
-      const frontR = new THREE.Mesh(new THREE.BoxGeometry(size.x * 0.19, 0.024, 0.02), frontMatR);
+      const frontL = new THREE.Mesh(
+        new THREE.BoxGeometry(size.x * 0.19, 0.024, 0.02),
+        frontMatL,
+      );
+      const frontR = new THREE.Mesh(
+        new THREE.BoxGeometry(size.x * 0.19, 0.024, 0.02),
+        frontMatR,
+      );
       frontL.position.set(-halfW, yHead, frontZ + 0.08);
       frontR.position.set(halfW, yHead, frontZ + 0.08);
 
@@ -969,9 +1170,12 @@ location.hash = route;</code></pre>
           color: 0xff5d78,
           transparent: true,
           opacity: 0.52,
-          depthWrite: false
+          depthWrite: false,
         });
-        const seg = new THREE.Mesh(new THREE.BoxGeometry(segW * 0.88, 0.02, 0.02), mat);
+        const seg = new THREE.Mesh(
+          new THREE.BoxGeometry(segW * 0.88, 0.02, 0.02),
+          mat,
+        );
         const x = -rearTotalW * 0.5 + segW * (i + 0.5);
         seg.position.set(x, yHead - 0.03, rearZ);
         rearGroup.add(seg);
@@ -983,7 +1187,7 @@ location.hash = route;</code></pre>
       fx.userData = {
         front: [frontL, frontR],
         rearSegs,
-        mats: [frontMatL, frontMatR, ...rearSegs.map(s => s.material)]
+        mats: [frontMatL, frontMatR, ...rearSegs.map((s) => s.material)],
       };
 
       return fx;
@@ -1013,7 +1217,9 @@ location.hash = route;</code></pre>
       const loader = new THREE.GLTFLoader();
       if (THREE.DRACOLoader) {
         const draco = new THREE.DRACOLoader();
-        draco.setDecoderPath("https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/libs/draco/");
+        draco.setDecoderPath(
+          "https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/libs/draco/",
+        );
         loader.setDRACOLoader(draco);
       }
 
@@ -1021,7 +1227,7 @@ location.hash = route;</code></pre>
         MODEL_URL,
         (gltf) => mountCarModel(gltf.scene),
         undefined,
-        () => mountCarModel(fallbackCar())
+        () => mountCarModel(fallbackCar()),
       );
     }
 
@@ -1043,8 +1249,16 @@ location.hash = route;</code></pre>
       const rearSegs = lightFx.userData.rearSegs || [];
       const N = rearSegs.length;
 
-      const wantDrive = speedNorm > 0.16 || boost > 0.18 || brake > 0.12 || state.throttleTarget > 0.35;
-      const wantPark = speedNorm < 0.08 && boost < 0.06 && brake < 0.05 && Math.abs(state.throttleTarget) < 0.12;
+      const wantDrive =
+        speedNorm > 0.16 ||
+        boost > 0.18 ||
+        brake > 0.12 ||
+        state.throttleTarget > 0.35;
+      const wantPark =
+        speedNorm < 0.08 &&
+        boost < 0.06 &&
+        brake < 0.05 &&
+        Math.abs(state.throttleTarget) < 0.12;
 
       if (wantDrive) {
         lightMode = "drive";
@@ -1063,8 +1277,20 @@ location.hash = route;</code></pre>
       const drivePulse = 0.62 + 0.24 * Math.sin(lightTime * 3.6 + beat * 2.5);
 
       const frontPark = clamp(parkBreath + beat * 0.15, 0.25, 1.0);
-      const frontDrive = clamp(drivePulse + beat * 0.35 + lightPulseBoost * 0.55 + speedNorm * 0.25 - brake * 0.12, 0.3, 1.9);
-      const frontI = THREE.MathUtils.lerp(frontPark, frontDrive, lightModeBlend);
+      const frontDrive = clamp(
+        drivePulse +
+          beat * 0.35 +
+          lightPulseBoost * 0.55 +
+          speedNorm * 0.25 -
+          brake * 0.12,
+        0.3,
+        1.9,
+      );
+      const frontI = THREE.MathUtils.lerp(
+        frontPark,
+        frontDrive,
+        lightModeBlend,
+      );
 
       frontArr.forEach((m) => {
         const mat = m.material || m;
@@ -1084,22 +1310,32 @@ location.hash = route;</code></pre>
         const u = i / Math.max(1, N - 1);
         const center = 1 - Math.abs(u - 0.5) * 2;
 
-        const parkI = 0.20 + center * 0.25 + 0.06 * Math.sin(lightTime * 1.5 + u * 5);
+        const parkI =
+          0.2 + center * 0.25 + 0.06 * Math.sin(lightTime * 1.5 + u * 5);
 
         const p = (lightTime * (0.85 + speedNorm * 1.25)) % 1;
-        const wave = Math.exp(-Math.pow((u - p), 2) / 0.012);
-        const driveI = 0.24 + wave * 1.35 + beat * 0.28 + lightPulseBoost * 0.45 + speedNorm * 0.24;
+        const wave = Math.exp(-Math.pow(u - p, 2) / 0.012);
+        const driveI =
+          0.24 +
+          wave * 1.35 +
+          beat * 0.28 +
+          lightPulseBoost * 0.45 +
+          speedNorm * 0.24;
 
         const edgeFactor = 0.86 + Math.abs(u - 0.5) * 0.35;
         const brakeI = brake * 1.25 * edgeFactor;
 
-        const I = clamp(THREE.MathUtils.lerp(parkI, driveI, lightModeBlend) + brakeI, 0.12, 2.4);
+        const I = clamp(
+          THREE.MathUtils.lerp(parkI, driveI, lightModeBlend) + brakeI,
+          0.12,
+          2.4,
+        );
 
         mat.opacity = clamp(0.18 + I * 0.38, 0.16, 1);
         mat.color.setRGB(
           1.0,
-          clamp(0.22 + I * 0.09 - brake * 0.10, 0.06, 1),
-          clamp(0.34 + I * 0.07 - brake * 0.18, 0.04, 1)
+          clamp(0.22 + I * 0.09 - brake * 0.1, 0.06, 1),
+          clamp(0.34 + I * 0.07 - brake * 0.18, 0.04, 1),
         );
       }
     }
@@ -1112,8 +1348,8 @@ location.hash = route;</code></pre>
           color: 0xffffff,
           transparent: true,
           opacity: 0.9,
-          side: THREE.DoubleSide
-        })
+          side: THREE.DoubleSide,
+        }),
       );
       ring.position.set(carRoot.position.x, floorY + 0.02, 1.1);
       ring.rotation.x = -Math.PI / 2;
@@ -1123,9 +1359,24 @@ location.hash = route;</code></pre>
     }
 
     const CAM_VIEWS = [
-      { name: "前45°英雄镜头", offset: { x: 4.2, y: 1.2, back: -4.8 }, look: { x: 0, y: 0.25, forward: 0.9 }, fov: 58 },
-      { name: "低机位贴地追拍", offset: { x: 0.5, y: 0.28, back: 8.8 }, look: { x: 0, y: -0.14, forward: 2.2 }, fov: 66 },
-      { name: "侧后方极速拉镜", offset: { x: -5.8, y: 1.0, back: 7.2 }, look: { x: 0.2, y: 0.08, forward: 1.2 }, fov: 62 }
+      {
+        name: "前45°英雄镜头",
+        offset: { x: 4.2, y: 1.2, back: -4.8 },
+        look: { x: 0, y: 0.25, forward: 0.9 },
+        fov: 58,
+      },
+      {
+        name: "低机位贴地追拍",
+        offset: { x: 0.5, y: 0.28, back: 8.8 },
+        look: { x: 0, y: -0.14, forward: 2.2 },
+        fov: 66,
+      },
+      {
+        name: "侧后方极速拉镜",
+        offset: { x: -5.8, y: 1.0, back: 7.2 },
+        look: { x: 0.2, y: 0.08, forward: 1.2 },
+        fov: 62,
+      },
     ];
 
     let viewIndex = 0;
@@ -1215,7 +1466,9 @@ location.hash = route;</code></pre>
 
     let hudPinned = false;
     let hudActiveUntil = performance.now() + 9000;
-    const nudgeHUD = (ms = 2200) => { hudActiveUntil = performance.now() + ms; };
+    const nudgeHUD = (ms = 2200) => {
+      hudActiveUntil = performance.now() + ms;
+    };
 
     hudPinBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -1264,9 +1517,15 @@ location.hash = route;</code></pre>
       state.throttleTarget = clamp(state.throttleTarget, -1.6, 4.8);
 
       if (e.deltaY > 0) {
-        windBoost = Math.min(1.3, windBoost + Math.min(0.24, Math.abs(e.deltaY) * 0.00075));
+        windBoost = Math.min(
+          1.3,
+          windBoost + Math.min(0.24, Math.abs(e.deltaY) * 0.00075),
+        );
       } else if (e.deltaY < 0) {
-        brakeBoost = Math.min(2.4, brakeBoost + Math.min(1.2, Math.abs(e.deltaY) * 0.0022));
+        brakeBoost = Math.min(
+          2.4,
+          brakeBoost + Math.min(1.2, Math.abs(e.deltaY) * 0.0022),
+        );
         camKick = Math.min(1.0, camKick + 0.2);
       }
 
@@ -1278,12 +1537,14 @@ location.hash = route;</code></pre>
 
       nudgeHUD(1800);
       await ensureMusicPlay();
-      if (state.audioStarted && dom.bgm && !dom.bgm.paused) setMusicBadge("播放中（风阻联动）");
+      if (state.audioStarted && dom.bgm && !dom.bgm.paused)
+        setMusicBadge("播放中（风阻联动）");
     }
 
     async function onPointerDown(e) {
       if (e.button !== 0) return;
-      if (e.target.closest("button,a,input,select,textarea,.landing-hud")) return;
+      if (e.target.closest("button,a,input,select,textarea,.landing-hud"))
+        return;
 
       updatePointer(e);
 
@@ -1339,7 +1600,11 @@ location.hash = route;</code></pre>
       const t = clock.elapsedTime;
       const now = performance.now();
 
-      if (!state.entered && now - manualViewTime > 12000 && now - autoViewTime > 6500) {
+      if (
+        !state.entered &&
+        now - manualViewTime > 12000 &&
+        now - autoViewTime > 6500
+      ) {
         nextView(false);
         autoViewTime = now;
       }
@@ -1357,7 +1622,8 @@ location.hash = route;</code></pre>
       const rollingDrag = 1.9 + state.velocity * 0.06;
       const brakeForce = brakeBoost * (10 + state.velocity * 1.8);
 
-      const accel = engineForce + nitroForce - aeroDrag - rollingDrag - brakeForce;
+      const accel =
+        engineForce + nitroForce - aeroDrag - rollingDrag - brakeForce;
       state.velocity += accel * dt;
       state.velocity = clamp(state.velocity, 0, 92);
 
@@ -1370,37 +1636,59 @@ location.hash = route;</code></pre>
       camKick = Math.max(0, camKick - dt * 2.8);
 
       const speedKmhRaw = state.velocity * 3.6;
-      speedDisplayKmh += (speedKmhRaw - speedDisplayKmh) * Math.min(1, dt * 6.2);
+      speedDisplayKmh +=
+        (speedKmhRaw - speedDisplayKmh) * Math.min(1, dt * 6.2);
       const speedNorm = clamp(speedDisplayKmh / 320, 0, 1);
 
       const view = CAM_VIEWS[viewIndex];
 
       // 车姿态
-      carRoot.position.x += ((carBaseX + pointer.x * 0.95) - carRoot.position.x) * 0.07;
-      carRoot.position.y = -1.95 + Math.sin(t * (3.8 + speedNorm * 8.5)) * (0.01 + speedNorm * 0.015);
-      carRoot.rotation.y += ((pointer.x * 0.16 + speedNorm * 0.08) - carRoot.rotation.y) * 0.08;
-      carRoot.rotation.z += ((-pointer.x * 0.05) - carRoot.rotation.z) * 0.08;
-      carRoot.rotation.x += ((pointer.y * 0.025 + nitroBoost * 0.018 - brakeBoost * 0.035) - carRoot.rotation.x) * 0.06;
+      carRoot.position.x +=
+        (carBaseX + pointer.x * 0.95 - carRoot.position.x) * 0.07;
+      carRoot.position.y =
+        -1.95 +
+        Math.sin(t * (3.8 + speedNorm * 8.5)) * (0.01 + speedNorm * 0.015);
+      carRoot.rotation.y +=
+        (pointer.x * 0.16 + speedNorm * 0.08 - carRoot.rotation.y) * 0.08;
+      carRoot.rotation.z += (-pointer.x * 0.05 - carRoot.rotation.z) * 0.08;
+      carRoot.rotation.x +=
+        (pointer.y * 0.025 +
+          nitroBoost * 0.018 -
+          brakeBoost * 0.035 -
+          carRoot.rotation.x) *
+        0.06;
 
       // 局部基向量（风阻方向跟车头）
       forward.set(0, 0, -1).applyQuaternion(carRoot.quaternion).normalize();
       side.set(1, 0, 0).applyQuaternion(carRoot.quaternion).normalize();
       up.set(0, 1, 0).applyQuaternion(carRoot.quaternion).normalize();
       back.copy(forward).multiplyScalar(-1);
+      if (wheelInfos.length === 4) {
+        const spin = state.velocity * dt * 3.5;
+        wheelInfos.forEach((w) => {
+          if (!w?.mesh || !w.mesh.visible) return;
+          if (!w.axisLocal) w.axisLocal = new THREE.Vector3(1, 0, 0);
+          w.mesh.rotateOnAxis(w.axisLocal, -spin);
+        });
+      }
 
-      const spin = state.velocity * dt * 3.5;
-      wheelInfos.forEach(w => {
-        if (!w.axisLocal) w.axisLocal = new THREE.Vector3(1, 0, 0);
-        w.mesh.rotateOnAxis(w.axisLocal, -spin);
-      });
-
-      updateSU7LightFx(dt, speedNorm, state.beat, windBoost + clickBoost + nitroBoost, brakeBoost);
+      updateSU7LightFx(
+        dt,
+        speedNorm,
+        state.beat,
+        windBoost + clickBoost + nitroBoost,
+        brakeBoost,
+      );
 
       // 镜头
-      tmpPos.copy(carRoot.position)
+      tmpPos
+        .copy(carRoot.position)
         .addScaledVector(side, view.offset.x + pointer.x * 0.65)
         .addScaledVector(up, view.offset.y - pointer.y * 0.25)
-        .addScaledVector(back, view.offset.back - speedNorm * 2.3 - clickBoost * 0.45);
+        .addScaledVector(
+          back,
+          view.offset.back - speedNorm * 2.3 - clickBoost * 0.45,
+        );
 
       tmpPos.z += accelJolt * 1.25; // 爆发后坐
 
@@ -1409,14 +1697,16 @@ location.hash = route;</code></pre>
 
       camera.position.lerp(tmpPos, 0.075);
 
-      tmpLook.copy(carRoot.position)
+      tmpLook
+        .copy(carRoot.position)
         .addScaledVector(side, view.look.x)
         .addScaledVector(up, view.look.y)
         .addScaledVector(forward, view.look.forward);
 
       camera.lookAt(tmpLook);
 
-      const targetFov = view.fov + speedNorm * 10.8 + clickBoost * 2.3 + nitroBoost * 2.8;
+      const targetFov =
+        view.fov + speedNorm * 10.8 + clickBoost * 2.3 + nitroBoost * 2.8;
       camera.fov += (targetFov - camera.fov) * 0.06;
       camera.updateProjectionMatrix();
 
@@ -1428,7 +1718,12 @@ location.hash = route;</code></pre>
       underGlow.scale.x = 5.6 + speedNorm * 2.3;
       underGlow.scale.y = 1.8 + speedNorm * 0.7;
 
-      nitroLight.intensity = 0.2 + speedNorm * 1.05 + clickBoost * 2.0 + nitroBoost * 2.6 + state.beat * 0.5;
+      nitroLight.intensity =
+        0.2 +
+        speedNorm * 1.05 +
+        clickBoost * 2.0 +
+        nitroBoost * 2.6 +
+        state.beat * 0.5;
       nitroLight.position.z = 2.15 + speedNorm * 0.4;
 
       windSystem.update({
@@ -1441,7 +1736,7 @@ location.hash = route;</code></pre>
         carPos: carRoot.position,
         forward,
         side,
-        up
+        up,
       });
 
       for (let i = ripples.length - 1; i >= 0; i--) {
@@ -1465,15 +1760,24 @@ location.hash = route;</code></pre>
       hudSpeed.textContent = `${speedKmh} km/h`;
       hudView.textContent = CAM_VIEWS[viewIndex].name;
 
-      const boostPct = clamp((windBoost + clickBoost + nitroBoost) * 55, 0, 100);
+      const boostPct = clamp(
+        (windBoost + clickBoost + nitroBoost) * 55,
+        0,
+        100,
+      );
       hudBoostText.textContent = `${boostPct.toFixed(0)}%`;
       hudBoostFill.style.width = `${boostPct.toFixed(0)}%`;
 
       if (state.audioStarted && dom.bgm && !dom.bgm.paused) {
-        dom.bgm.playbackRate = clamp(0.94 + speedNorm * 0.36 + nitroBoost * 0.06, 0.9, 1.32);
+        dom.bgm.playbackRate = clamp(
+          0.94 + speedNorm * 0.36 + nitroBoost * 0.06,
+          0.9,
+          1.32,
+        );
       }
 
-      renderer.toneMappingExposure = 1.18 + speedNorm * 0.18 + nitroBoost * 0.08;
+      renderer.toneMappingExposure =
+        1.18 + speedNorm * 0.18 + nitroBoost * 0.08;
       renderer.render(scene, camera);
     }
 
