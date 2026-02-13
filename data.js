@@ -1,4 +1,4 @@
-window.BLOG_POSTS = [
+export const POSTS = [
   {
     id: "future-blog-arch",
     title: "新一代博客架构：从内容到体验的统一",

@@ -1,0 +1,25 @@
+###
+ # @Author: linyc
+ # @Date: 2026-02-13 12:05:49
+ # @LastEditTime: 2026-02-13 14:03:27
+ # @LastEditors: linyc
+ # @Description: 
+### 
+#!/bin/sh
+if [ "$CHANGELOG_SKIP" = "1" ]; then
+  exit 0
+fi
+
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+
+PY=python3
+command -v python3 >/dev/null 2>&1 || PY=python
+
+$PY "$ROOT/scripts/changelog_sync.py" >/dev/null 2>&1 || exit 0
+
+if ! git -C "$ROOT" diff --quiet -- CHANGELOG.md; then
+  git -C "$ROOT" add CHANGELOG.md
+  CHANGELOG_SKIP=1 git -C "$ROOT" commit --amend --no-edit --no-verify >/dev/null 2>&1
+fi
+
+exit 0

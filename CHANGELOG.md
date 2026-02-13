@@ -1,13 +1,37 @@
 <!--
  * @Author: linyc
  * @Date: 2026-02-13 11:10:57
- * @LastEditTime: 2026-02-13 11:10:59
+ * @LastEditTime: 2026-02-13 11:59:31
  * @LastEditors: linyc
  * @Description: 
 -->
 ---
 
 ## `CHANGELOG.md`（新增，记录每次更改）
+
+
+# Changelog
+
+## [Unreleased]
+
+### Commits
+- 初始化：History 路由 + 风阻方向一致 + 幻影加速 + 提交自动同步（待后续提交自动追加）
+
+---
+
+## [v0.6.0] - 2026-02-13
+
+### Added
+- 路由切换为 History 模式（pushState/popstate）
+- Vercel 重写支持 history 直达
+- 提交信息自动同步到 CHANGELOG（githooks + python）
+- 氮气加速视觉升级：闪白、后坐、二次冲击波
+- 幻影拖影（Ghost Trail）
+- 风阻增强：方向跟随车头 + 侧滑涡流 + 刹车压缩
+- 速度上限支持 260km/h+
+
+### Changed
+- 本地服务替换为可 fallback 的 `dev_server.py`，支持 history 路由刷新不 404
 
 ```md
 # Changelog
