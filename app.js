@@ -35,30 +35,14 @@
     audioCtx: null,
     beat: 0,
     throttleTarget: 0,
-    velocity: 4.2
+    velocity: 4.2 // m/s 近似
   };
 
   const LANDING_STAGES = [
-    {
-      eyebrow: "ELECTRIC · PERFORMANCE · FUTURE",
-      title: "01 电子脉冲点火",
-      sub: "滚轮推进镜头，点击触发能量脉冲，音乐与动画实时联动。"
-    },
-    {
-      eyebrow: "AERODYNAMIC · MOTION · POWER",
-      title: "02 高速流线推进",
-      sub: "滚轮切换分镜段落，镜头推拉配合速度感构建。"
-    },
-    {
-      eyebrow: "LIGHT · SPACE · CONTROL",
-      title: "03 光场与姿态控制",
-      sub: "鼠标移动改变观察角度，感受三维空间深度。"
-    },
-    {
-      eyebrow: "READY · ENTER · EXPERIENCE",
-      title: "04 进入沉浸博客",
-      sub: "点击进入，查看完整首页、归档、分类、标签、关于与搜索。"
-    }
+    { eyebrow: "ELECTRIC · PERFORMANCE · FUTURE", title: "01 电子脉冲点火", sub: "滚轮推进镜头，点击触发能量脉冲，音乐与动画实时联动。" },
+    { eyebrow: "AERODYNAMIC · MOTION · POWER", title: "02 高速流线推进", sub: "滚轮切换分镜段落，镜头推拉配合速度感构建。" },
+    { eyebrow: "LIGHT · SPACE · CONTROL", title: "03 光场与姿态控制", sub: "鼠标移动改变观察角度，感受三维空间深度。" },
+    { eyebrow: "READY · ENTER · EXPERIENCE", title: "04 进入沉浸博客", sub: "点击进入，查看完整首页、归档、分类、标签、关于与搜索。" }
   ];
 
   const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
@@ -103,6 +87,7 @@
   async function ensureMusicPlay() {
     if (!dom.bgm) return;
     if (!state.audioCtx) initAudioAnalyser();
+
     if (state.audioCtx && state.audioCtx.state === "suspended") {
       try { await state.audioCtx.resume(); } catch {}
     }
@@ -169,6 +154,7 @@
     if (dom.stageDots) {
       [...dom.stageDots.children].forEach((el, i) => el.classList.toggle("active", i === state.stageIndex));
     }
+
     state.lastStageSwitch = performance.now();
   }
 
@@ -479,6 +465,7 @@ location.hash = route;</code></pre>
         document.getElementById(link.dataset.tocId)?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
+
     syncTOCActive();
   }
 
@@ -554,7 +541,8 @@ location.hash = route;</code></pre>
   /* ================= Landing helpers ================= */
   function createRadialTexture() {
     const c = document.createElement("canvas");
-    c.width = 256; c.height = 256;
+    c.width = 256;
+    c.height = 256;
     const ctx = c.getContext("2d");
     const g = ctx.createRadialGradient(128, 128, 10, 128, 128, 120);
     g.addColorStop(0, "rgba(160,220,255,0.95)");
@@ -567,7 +555,6 @@ location.hash = route;</code></pre>
     return tex;
   }
 
-  // 重点：风阻方向和车运动方向一致（使用 forward/back basis）
   function createDirectionalWindSystem(scene, isMobile) {
     const count = isMobile ? 700 : 1400;
     const geo = new THREE.BufferGeometry();
@@ -609,7 +596,7 @@ location.hash = route;</code></pre>
       it.side = Math.random() < 0.5 ? -1 : 1;
       it.lat = it.side * (2.9 + Math.random() * 10.5);
       it.h = lanes[(Math.random() * lanes.length) | 0] + (Math.random() - 0.5) * 0.06;
-      it.along = first ? (-40 + Math.random() * 95) : (55 + Math.random() * 35); // 前方 -> 向后穿过
+      it.along = first ? (-40 + Math.random() * 95) : (55 + Math.random() * 35);
       it.len = 1.2 + Math.random() * 5.2;
       it.layer = 0.55 + Math.random() * 1.95;
       it.seed = Math.random() * 100;
@@ -623,18 +610,18 @@ location.hash = route;</code></pre>
     for (let i = 0; i < count; i++) items.push(reset({}, true));
 
     return {
-      update({ dt, t, speedNorm, beat, boost, pointerX, pointerY, carPos, forward, side, up }) {
+      update({ dt, t, speedNorm, boost, pointerX, pointerY, carPos, forward, side, up }) {
         const fx = forward.x, fy = forward.y, fz = forward.z;
         const sx = side.x, sy = side.y, sz = side.z;
         const ux = up.x, uy = up.y, uz = up.z;
-        const bx = -fx, by = -fy, bz = -fz; // 相对风方向：前 -> 后
+        const bx = -fx, by = -fy, bz = -fz;
 
         const flowSpeed = 28 + speedNorm * 110 + boost * 42;
         const px = carPos.x, py = carPos.y, pz = carPos.z;
 
         for (let i = 0; i < count; i++) {
           const it = items[i];
-          it.along -= flowSpeed * dt * it.layer; // 沿 forward 负向（后移）
+          it.along -= flowSpeed * dt * it.layer;
           if (it.along < -it.rearLimit) reset(it, false);
 
           const lat = it.lat + pointerX * (0.95 + it.layer * 0.16) * Math.sign(it.lat);
@@ -645,9 +632,8 @@ location.hash = route;</code></pre>
           const y = py + sy * lat + uy * h + fy * along;
           const z = pz + sz * lat + uz * h + fz * along;
 
-          const seg = it.len * (1 + speedNorm * 2.35 + beat * 0.4 + boost * 0.95);
+          const seg = it.len * (1 + speedNorm * 2.35 + boost * 0.95);
 
-          // 车体净空区（避免遮挡主角）
           const clearZone = Math.abs(lat) < 2.15 && h > -1.5 && h < 1.8 && along > -4 && along < 8;
           const vis = clearZone ? 0.14 : 1.0;
 
@@ -660,7 +646,7 @@ location.hash = route;</code></pre>
           pos[bi + 4] = y - by * seg * 0.35;
           pos[bi + 5] = z - bz * seg * 0.35;
 
-          const g = (0.35 + speedNorm * 1.1 + beat * 0.32 + boost * 0.75) * vis;
+          const g = (0.35 + speedNorm * 1.1 + boost * 0.75) * vis;
           col[bi + 0] = it.r * g; col[bi + 1] = it.g * g; col[bi + 2] = it.b * g;
           col[bi + 3] = it.r * g; col[bi + 4] = it.g * g; col[bi + 5] = it.b * g;
         }
@@ -692,7 +678,6 @@ location.hash = route;</code></pre>
     renderer.toneMappingExposure = 1.23;
 
     scene.add(new THREE.HemisphereLight(0xc3d8ff, 0x091020, 0.78));
-
     const key = new THREE.DirectionalLight(0xe0efff, 1.42);
     key.position.set(6, 7, 7);
     scene.add(key);
@@ -762,6 +747,13 @@ location.hash = route;</code></pre>
 
     let wheelInfos = [];
     let semanticFx = null;
+    let lightFx = null;
+    let lightPulseBoost = 0;
+    let lightTime = 0;
+    let lightMode = "park";
+    let lightModeBlend = 0;
+    let lightStillTimer = 0;
+
     let carMeshList = [];
     let carLoaded = false;
 
@@ -771,9 +763,19 @@ location.hash = route;</code></pre>
       return new THREE.Vector3(0, 0, 1);
     }
 
+    function removeLegacyWingMeshes(root) {
+      const wingReg = /spoiler|rear[\s_-]?wing|tail[\s_-]?wing|尾翼|扰流|ducktail/i;
+      const mirrorReg = /mirror|后视镜/i;
+      root.traverse((n) => {
+        if (!n.isMesh) return;
+        const name = (n.name || "").toLowerCase();
+        if (mirrorReg.test(name)) return;
+        if (wingReg.test(name)) n.visible = false;
+      });
+    }
+
     function fallbackCar() {
       const g = new THREE.Group();
-
       const bodyMat = new THREE.MeshPhysicalMaterial({
         color: 0x102b7a,
         metalness: 0.84,
@@ -783,7 +785,6 @@ location.hash = route;</code></pre>
         emissive: 0x081946,
         emissiveIntensity: 0.8
       });
-
       const glassMat = new THREE.MeshPhysicalMaterial({
         color: 0x79d8ff,
         transparent: true,
@@ -944,49 +945,60 @@ location.hash = route;</code></pre>
       bounds.getSize(size);
       bounds.getCenter(center);
 
-      const frontZ = bounds.min.z + size.z * 0.045;
-      const rearZ = bounds.max.z - size.z * 0.05;
-      const yHead = bounds.min.y + size.y * 0.43;
+      const frontZ = bounds.min.z + size.z * 0.05;
+      const rearZ = bounds.max.z - size.z * 0.04;
+      const yHead = bounds.min.y + size.y * 0.42;
       const halfW = size.x * 0.33;
 
-      const cyan = new THREE.MeshBasicMaterial({ color: 0x8fe8ff, transparent: true, opacity: 0.92 });
-      const pink = new THREE.MeshBasicMaterial({ color: 0xff9dcd, transparent: true, opacity: 0.7 });
-      const red = new THREE.MeshBasicMaterial({ color: 0xff5875, transparent: true, opacity: 0.88 });
+      const frontMatL = new THREE.MeshBasicMaterial({ color: 0x8fe8ff, transparent: true, opacity: 0.86, depthWrite: false });
+      const frontMatR = new THREE.MeshBasicMaterial({ color: 0x8fe8ff, transparent: true, opacity: 0.86, depthWrite: false });
 
-      const lampL = new THREE.Mesh(new THREE.BoxGeometry(size.x * 0.2, 0.028, 0.02), cyan);
-      const lampR = lampL.clone();
-      lampL.position.set(-halfW, yHead, frontZ + 0.11);
-      lampR.position.set(halfW, yHead, frontZ + 0.11);
+      const frontL = new THREE.Mesh(new THREE.BoxGeometry(size.x * 0.19, 0.024, 0.02), frontMatL);
+      const frontR = new THREE.Mesh(new THREE.BoxGeometry(size.x * 0.19, 0.024, 0.02), frontMatR);
+      frontL.position.set(-halfW, yHead, frontZ + 0.08);
+      frontR.position.set(halfW, yHead, frontZ + 0.08);
 
-      const horseshoe = new THREE.Mesh(
-        new THREE.TorusGeometry(size.x * 0.11, 0.012, 10, 48, Math.PI * 1.35),
-        pink
-      );
-      horseshoe.rotation.z = Math.PI;
-      horseshoe.position.set(0, yHead - 0.04, frontZ + 0.075);
+      const rearGroup = new THREE.Group();
+      const rearSegs = [];
+      const rearCount = 18;
+      const rearTotalW = size.x * 0.64;
+      const segW = rearTotalW / rearCount;
 
-      const rearStrip = new THREE.Mesh(new THREE.BoxGeometry(size.x * 0.58, 0.02, 0.02), red);
-      rearStrip.position.set(0, yHead - 0.02, rearZ - 0.02);
+      for (let i = 0; i < rearCount; i++) {
+        const mat = new THREE.MeshBasicMaterial({
+          color: 0xff5d78,
+          transparent: true,
+          opacity: 0.52,
+          depthWrite: false
+        });
+        const seg = new THREE.Mesh(new THREE.BoxGeometry(segW * 0.88, 0.02, 0.02), mat);
+        const x = -rearTotalW * 0.5 + segW * (i + 0.5);
+        seg.position.set(x, yHead - 0.03, rearZ);
+        rearGroup.add(seg);
+        rearSegs.push(seg);
+      }
 
-      const cArcGeo = new THREE.TorusGeometry(size.x * 0.11, 0.01, 8, 36, Math.PI * 1.15);
-      const cL = new THREE.Mesh(cArcGeo, cyan);
-      const cR = new THREE.Mesh(cArcGeo, cyan);
-      cL.rotation.y = Math.PI / 2;
-      cR.rotation.y = -Math.PI / 2;
-      cL.position.set(-size.x * 0.28, yHead + 0.08, center.z - size.z * 0.12);
-      cR.position.set(size.x * 0.28, yHead + 0.08, center.z - size.z * 0.12);
+      fx.add(frontL, frontR, rearGroup);
 
-      fx.add(lampL, lampR, horseshoe, rearStrip, cL, cR);
-      fx.userData = { mats: [cyan, pink, red] };
+      fx.userData = {
+        front: [frontL, frontR],
+        rearSegs,
+        mats: [frontMatL, frontMatR, ...rearSegs.map(s => s.material)]
+      };
+
       return fx;
     }
 
     function mountCarModel(rootObj) {
       carMeshList = [];
+      removeLegacyWingMeshes(rootObj);
       boostMaterials(rootObj);
+
       const bounds = orientScaleCenterModel(rootObj);
       wheelInfos = detectWheelInfos(rootObj, bounds);
+
       semanticFx = createSemanticFx(bounds);
+      lightFx = semanticFx;
 
       carRoot.add(rootObj);
       carRoot.add(semanticFx);
@@ -1021,11 +1033,87 @@ location.hash = route;</code></pre>
 
     const windSystem = createDirectionalWindSystem(scene, isMobile);
 
+    function updateSU7LightFx(dt, speedNorm, beat, boost, brake) {
+      if (!lightFx || !lightFx.userData) return;
+
+      lightTime += dt * (1.0 + speedNorm * 1.8);
+      lightPulseBoost = Math.max(0, lightPulseBoost - dt * 1.35);
+
+      const frontArr = lightFx.userData.front || [];
+      const rearSegs = lightFx.userData.rearSegs || [];
+      const N = rearSegs.length;
+
+      const wantDrive = speedNorm > 0.16 || boost > 0.18 || brake > 0.12 || state.throttleTarget > 0.35;
+      const wantPark = speedNorm < 0.08 && boost < 0.06 && brake < 0.05 && Math.abs(state.throttleTarget) < 0.12;
+
+      if (wantDrive) {
+        lightMode = "drive";
+        lightStillTimer = 0;
+      } else if (wantPark) {
+        lightStillTimer += dt;
+        if (lightStillTimer > 0.9) lightMode = "park";
+      } else {
+        lightStillTimer = 0;
+      }
+
+      const targetBlend = lightMode === "drive" ? 1 : 0;
+      lightModeBlend += (targetBlend - lightModeBlend) * Math.min(1, dt * 4.2);
+
+      const parkBreath = 0.48 + 0.18 * Math.sin(lightTime * 1.8);
+      const drivePulse = 0.62 + 0.24 * Math.sin(lightTime * 3.6 + beat * 2.5);
+
+      const frontPark = clamp(parkBreath + beat * 0.15, 0.25, 1.0);
+      const frontDrive = clamp(drivePulse + beat * 0.35 + lightPulseBoost * 0.55 + speedNorm * 0.25 - brake * 0.12, 0.3, 1.9);
+      const frontI = THREE.MathUtils.lerp(frontPark, frontDrive, lightModeBlend);
+
+      frontArr.forEach((m) => {
+        const mat = m.material || m;
+        if (!mat) return;
+        mat.opacity = clamp(0.28 + frontI * 0.42, 0.2, 1);
+
+        const r = THREE.MathUtils.lerp(0.76, 0.56, lightModeBlend);
+        const g = THREE.MathUtils.lerp(0.86, 0.88, lightModeBlend);
+        mat.color.setRGB(r + frontI * 0.08, g + frontI * 0.04, 1.0);
+      });
+
+      for (let i = 0; i < N; i++) {
+        const seg = rearSegs[i];
+        const mat = seg.material;
+        if (!mat) continue;
+
+        const u = i / Math.max(1, N - 1);
+        const center = 1 - Math.abs(u - 0.5) * 2;
+
+        const parkI = 0.20 + center * 0.25 + 0.06 * Math.sin(lightTime * 1.5 + u * 5);
+
+        const p = (lightTime * (0.85 + speedNorm * 1.25)) % 1;
+        const wave = Math.exp(-Math.pow((u - p), 2) / 0.012);
+        const driveI = 0.24 + wave * 1.35 + beat * 0.28 + lightPulseBoost * 0.45 + speedNorm * 0.24;
+
+        const edgeFactor = 0.86 + Math.abs(u - 0.5) * 0.35;
+        const brakeI = brake * 1.25 * edgeFactor;
+
+        const I = clamp(THREE.MathUtils.lerp(parkI, driveI, lightModeBlend) + brakeI, 0.12, 2.4);
+
+        mat.opacity = clamp(0.18 + I * 0.38, 0.16, 1);
+        mat.color.setRGB(
+          1.0,
+          clamp(0.22 + I * 0.09 - brake * 0.10, 0.06, 1),
+          clamp(0.34 + I * 0.07 - brake * 0.18, 0.04, 1)
+        );
+      }
+    }
+
     const ripples = [];
     function spawnRipple(power = 1) {
       const ring = new THREE.Mesh(
         new THREE.RingGeometry(0.45, 0.54, 64),
-        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, side: THREE.DoubleSide })
+        new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.9,
+          side: THREE.DoubleSide
+        })
       );
       ring.position.set(carRoot.position.x, floorY + 0.02, 1.1);
       ring.rotation.x = -Math.PI / 2;
@@ -1043,6 +1131,10 @@ location.hash = route;</code></pre>
     let viewIndex = 0;
     let windBoost = 0;
     let clickBoost = 0;
+    let brakeBoost = 0;
+    let nitroBoost = 0;
+    let accelJolt = 0;
+    let speedDisplayKmh = 0;
     let camKick = 0;
     let manualViewTime = performance.now();
     let autoViewTime = performance.now();
@@ -1063,8 +1155,10 @@ location.hash = route;</code></pre>
     function setView(i, manual = true) {
       viewIndex = (i + CAM_VIEWS.length) % CAM_VIEWS.length;
       if (manual) manualViewTime = performance.now();
+      lightPulseBoost = Math.min(2.0, lightPulseBoost + 0.75);
       showCamCaption(CAM_VIEWS[viewIndex].name);
     }
+
     function nextView(manual = true) {
       setView(viewIndex + 1, manual);
     }
@@ -1082,7 +1176,6 @@ location.hash = route;</code></pre>
       actions.appendChild(btn);
     }
 
-    // HUD
     const hud = document.createElement("aside");
     hud.className = "landing-hud active";
     hud.innerHTML = `
@@ -1090,6 +1183,7 @@ location.hash = route;</code></pre>
         <div class="left"><span class="dot"></span><span>DRIVE HUD</span></div>
         <button class="hud-mini" data-hud-pin>H 常驻</button>
       </div>
+
       <div class="hud-metrics">
         <div class="metric">
           <small>速度</small>
@@ -1100,12 +1194,15 @@ location.hash = route;</code></pre>
           <b data-hud-view>${CAM_VIEWS[0].name}</b>
         </div>
       </div>
+
       <div class="boost">
         <div class="boost-label">
-          <span>风阻强度</span><span data-hud-boost-text>0%</span>
+          <span>风阻强度</span>
+          <span data-hud-boost-text>0%</span>
         </div>
         <div class="boost-track"><div class="boost-fill" data-hud-boost-fill></div></div>
       </div>
+
       <p class="hud-tip">左键点车加速 · 滚轮调速 · <kbd>V</kbd>切镜头 · 右键切镜头 · <kbd>1/2/3</kbd>快速镜头</p>
     `;
     dom.landing.appendChild(hud);
@@ -1115,6 +1212,7 @@ location.hash = route;</code></pre>
     const hudBoostText = hud.querySelector("[data-hud-boost-text]");
     const hudBoostFill = hud.querySelector("[data-hud-boost-fill]");
     const hudPinBtn = hud.querySelector("[data-hud-pin]");
+
     let hudPinned = false;
     let hudActiveUntil = performance.now() + 9000;
     const nudgeHUD = (ms = 2200) => { hudActiveUntil = performance.now() + ms; };
@@ -1140,14 +1238,20 @@ location.hash = route;</code></pre>
     }
 
     async function boostCar(power = 1.0) {
-      state.throttleTarget += 0.75 * power;
-      state.throttleTarget = clamp(state.throttleTarget, -1.2, 3.8);
+      state.throttleTarget += 1.15 * power;
+      state.throttleTarget = clamp(state.throttleTarget, -1.6, 4.8);
 
-      windBoost = Math.min(1.8, windBoost + 0.8 * power);
-      clickBoost = Math.min(1.6, clickBoost + 1.05 * power);
-      camKick = Math.min(1.0, camKick + 0.8 * power);
+      windBoost = Math.min(2.2, windBoost + 0.95 * power);
+      clickBoost = Math.min(1.8, clickBoost + 1.2 * power);
+      nitroBoost = Math.min(2.4, nitroBoost + 1.25 * power);
+      accelJolt = Math.min(1.2, accelJolt + 0.95 * power);
+      camKick = Math.min(1.2, camKick + 0.9 * power);
+
+      lightPulseBoost = Math.min(2.6, lightPulseBoost + 1.05 * power);
 
       spawnRipple(power);
+      setTimeout(() => spawnRipple(power * 0.7), 120);
+
       dom.landing.classList.add("pulse");
       setTimeout(() => dom.landing.classList.remove("pulse"), 220);
 
@@ -1157,7 +1261,14 @@ location.hash = route;</code></pre>
 
     async function onWheel(e) {
       state.throttleTarget += e.deltaY * 0.0011;
-      state.throttleTarget = clamp(state.throttleTarget, -1.2, 3.8);
+      state.throttleTarget = clamp(state.throttleTarget, -1.6, 4.8);
+
+      if (e.deltaY > 0) {
+        windBoost = Math.min(1.3, windBoost + Math.min(0.24, Math.abs(e.deltaY) * 0.00075));
+      } else if (e.deltaY < 0) {
+        brakeBoost = Math.min(2.4, brakeBoost + Math.min(1.2, Math.abs(e.deltaY) * 0.0022));
+        camKick = Math.min(1.0, camKick + 0.2);
+      }
 
       state.wheelBuffer += e.deltaY;
       if (Math.abs(state.wheelBuffer) > 130) {
@@ -1165,9 +1276,7 @@ location.hash = route;</code></pre>
         state.wheelBuffer = 0;
       }
 
-      windBoost = Math.min(1.2, windBoost + Math.min(0.22, Math.abs(e.deltaY) * 0.0007));
       nudgeHUD(1800);
-
       await ensureMusicPlay();
       if (state.audioStarted && dom.bgm && !dom.bgm.paused) setMusicBadge("播放中（风阻联动）");
     }
@@ -1234,31 +1343,46 @@ location.hash = route;</code></pre>
         nextView(false);
         autoViewTime = now;
       }
+
       if (!state.entered && now - state.lastStageSwitch > 6400) stepStage(1);
 
       const beatRaw = readBeat();
       state.beat += (beatRaw - state.beat) * 0.12;
 
-      const thrust = 7.4 * (0.58 + state.throttleTarget);
-      const drag = 0.5 * state.velocity * Math.abs(state.velocity);
-      state.velocity += (thrust - drag) * dt;
-      state.velocity = clamp(state.velocity, 0.9, 17.6);
+      // === 真实速度物理（260+）===
+      const throttle01 = clamp((state.throttleTarget + 1.6) / 6.4, 0, 1);
+      const engineForce = 20 + throttle01 * 74;
+      const nitroForce = nitroBoost * 46;
+      const aeroDrag = 0.15 * state.velocity * state.velocity;
+      const rollingDrag = 1.9 + state.velocity * 0.06;
+      const brakeForce = brakeBoost * (10 + state.velocity * 1.8);
 
-      state.throttleTarget *= Math.exp(-1.9 * dt);
-      clickBoost = Math.max(0, clickBoost - dt * 2.3);
-      windBoost = Math.max(0, windBoost - dt * 1.35);
-      camKick = Math.max(0, camKick - dt * 2.7);
+      const accel = engineForce + nitroForce - aeroDrag - rollingDrag - brakeForce;
+      state.velocity += accel * dt;
+      state.velocity = clamp(state.velocity, 0, 92);
 
-      const speedNorm = (state.velocity - 0.9) / 16.7;
+      state.throttleTarget *= Math.exp(-1.75 * dt);
+      clickBoost = Math.max(0, clickBoost - dt * 2.4);
+      windBoost = Math.max(0, windBoost - dt * 1.4);
+      brakeBoost = Math.max(0, brakeBoost - dt * 2.7);
+      nitroBoost = Math.max(0, nitroBoost - dt * 1.9);
+      accelJolt = Math.max(0, accelJolt - dt * 3.1);
+      camKick = Math.max(0, camKick - dt * 2.8);
+
+      const speedKmhRaw = state.velocity * 3.6;
+      speedDisplayKmh += (speedKmhRaw - speedDisplayKmh) * Math.min(1, dt * 6.2);
+      const speedNorm = clamp(speedDisplayKmh / 320, 0, 1);
+
       const view = CAM_VIEWS[viewIndex];
 
+      // 车姿态
       carRoot.position.x += ((carBaseX + pointer.x * 0.95) - carRoot.position.x) * 0.07;
       carRoot.position.y = -1.95 + Math.sin(t * (3.8 + speedNorm * 8.5)) * (0.01 + speedNorm * 0.015);
       carRoot.rotation.y += ((pointer.x * 0.16 + speedNorm * 0.08) - carRoot.rotation.y) * 0.08;
       carRoot.rotation.z += ((-pointer.x * 0.05) - carRoot.rotation.z) * 0.08;
-      carRoot.rotation.x += ((pointer.y * 0.025) - carRoot.rotation.x) * 0.06;
+      carRoot.rotation.x += ((pointer.y * 0.025 + nitroBoost * 0.018 - brakeBoost * 0.035) - carRoot.rotation.x) * 0.06;
 
-      // 车体局部坐标基
+      // 局部基向量（风阻方向跟车头）
       forward.set(0, 0, -1).applyQuaternion(carRoot.quaternion).normalize();
       side.set(1, 0, 0).applyQuaternion(carRoot.quaternion).normalize();
       up.set(0, 1, 0).applyQuaternion(carRoot.quaternion).normalize();
@@ -1270,19 +1394,19 @@ location.hash = route;</code></pre>
         w.mesh.rotateOnAxis(w.axisLocal, -spin);
       });
 
-      if (semanticFx?.userData?.mats) {
-        const glow = 0.68 + speedNorm * 0.46 + state.beat * 0.55 + clickBoost * 0.3;
-        semanticFx.userData.mats.forEach(m => m.opacity = clamp(glow, 0.5, 1));
-      }
+      updateSU7LightFx(dt, speedNorm, state.beat, windBoost + clickBoost + nitroBoost, brakeBoost);
 
-      // Camera (local car basis)
+      // 镜头
       tmpPos.copy(carRoot.position)
         .addScaledVector(side, view.offset.x + pointer.x * 0.65)
         .addScaledVector(up, view.offset.y - pointer.y * 0.25)
         .addScaledVector(back, view.offset.back - speedNorm * 2.3 - clickBoost * 0.45);
 
+      tmpPos.z += accelJolt * 1.25; // 爆发后坐
+
       tmpPos.x += (Math.random() - 0.5) * camKick * 0.08;
       tmpPos.y += (Math.random() - 0.5) * camKick * 0.05;
+
       camera.position.lerp(tmpPos, 0.075);
 
       tmpLook.copy(carRoot.position)
@@ -1292,7 +1416,7 @@ location.hash = route;</code></pre>
 
       camera.lookAt(tmpLook);
 
-      const targetFov = view.fov + speedNorm * 8.8 + clickBoost * 1.9;
+      const targetFov = view.fov + speedNorm * 10.8 + clickBoost * 2.3 + nitroBoost * 2.8;
       camera.fov += (targetFov - camera.fov) * 0.06;
       camera.updateProjectionMatrix();
 
@@ -1304,15 +1428,14 @@ location.hash = route;</code></pre>
       underGlow.scale.x = 5.6 + speedNorm * 2.3;
       underGlow.scale.y = 1.8 + speedNorm * 0.7;
 
-      nitroLight.intensity = 0.22 + speedNorm * 1.0 + clickBoost * 2.2 + state.beat * 0.55;
+      nitroLight.intensity = 0.2 + speedNorm * 1.05 + clickBoost * 2.0 + nitroBoost * 2.6 + state.beat * 0.5;
       nitroLight.position.z = 2.15 + speedNorm * 0.4;
 
       windSystem.update({
         dt,
         t,
         speedNorm,
-        beat: state.beat,
-        boost: windBoost + clickBoost,
+        boost: windBoost + clickBoost + nitroBoost,
         pointerX: pointer.x,
         pointerY: pointer.y,
         carPos: carRoot.position,
@@ -1338,18 +1461,19 @@ location.hash = route;</code></pre>
       const hudActive = hudPinned || performance.now() < hudActiveUntil;
       hud.classList.toggle("active", hudActive);
 
-      const speedKmh = Math.round(40 + state.velocity * 22);
+      const speedKmh = Math.round(speedDisplayKmh);
       hudSpeed.textContent = `${speedKmh} km/h`;
       hudView.textContent = CAM_VIEWS[viewIndex].name;
 
-      const boostPct = clamp((windBoost + clickBoost) * 55, 0, 100);
+      const boostPct = clamp((windBoost + clickBoost + nitroBoost) * 55, 0, 100);
       hudBoostText.textContent = `${boostPct.toFixed(0)}%`;
       hudBoostFill.style.width = `${boostPct.toFixed(0)}%`;
 
       if (state.audioStarted && dom.bgm && !dom.bgm.paused) {
-        dom.bgm.playbackRate = clamp(0.94 + speedNorm * 0.33 + clickBoost * 0.04, 0.9, 1.26);
+        dom.bgm.playbackRate = clamp(0.94 + speedNorm * 0.36 + nitroBoost * 0.06, 0.9, 1.32);
       }
 
+      renderer.toneMappingExposure = 1.18 + speedNorm * 0.18 + nitroBoost * 0.08;
       renderer.render(scene, camera);
     }
 
@@ -1362,7 +1486,7 @@ location.hash = route;</code></pre>
     });
   }
 
-  /* ================= Enter site ================= */
+  /* ================= Enter ================= */
   function enterSite() {
     if (state.entered) return;
     state.entered = true;
