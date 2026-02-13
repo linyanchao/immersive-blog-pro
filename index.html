@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linyc Immersive Blog Pro</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="progress"></div>
+
+  <section id="landing" class="landing" data-stage="0">
+    <canvas id="landingCanvas"></canvas>
+    <div class="landing-overlay">
+      <p id="stageEyebrow" class="eyebrow">ELECTRIC · PERFORMANCE · FUTURE</p>
+      <h1>LINYC IMMERSIVE BLOG</h1>
+
+      <div class="stage-box">
+        <h2 id="stageTitle">01 电子脉冲点火</h2>
+        <p id="stageSub">滚轮推进镜头，点击触发能量脉冲，音乐与动画实时联动。</p>
+        <div id="stageDots" class="stage-dots"></div>
+      </div>
+
+      <div class="landing-actions">
+        <button id="enterBtn" class="enter-btn">进入博客</button>
+        <button id="musicToggle" class="ghost-btn">🎵 BGM</button>
+      </div>
+      <small id="musicBadge">音乐状态：等待交互启动</small>
+    </div>
+  </section>
+
+  <div id="app" class="app" aria-hidden="true">
+    <header class="header">
+      <div class="container header-inner">
+        <div id="logo" class="logo">Quan<span>cy</span> Blog</div>
+        <nav id="mainNav" class="main-nav">
+          <a href="#home" data-route="home">首页</a>
+          <a href="#archive" data-route="archive">归档</a>
+          <a href="#categories" data-route="categories">分类</a>
+          <a href="#tags" data-route="tags">标签</a>
+          <a href="#about" data-route="about">关于</a>
+          <a href="#search" data-route="search">搜索</a>
+        </nav>
+        <div class="header-actions">
+          <button id="themeBtn" class="btn">🌙</button>
+        </div>
+      </div>
+    </header>
+
+    <main id="pageView" class="container page-view"></main>
+
+    <footer class="footer">© 2026 Linyc Immersive Demo · Three.js + Vanilla JS</footer>
+  </div>
+
+  <button id="backTop" class="backtop">↑</button>
+  <audio id="bgm" src="./assets/bgm.mp3" loop preload="auto"></audio>
+
+  <!-- 固定 146 版本 -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.146.0/examples/js/loaders/DRACOLoader.js"></script>
+
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
